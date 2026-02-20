@@ -17,6 +17,7 @@
 # Workspace runtime dirs (track config files, ignore binaries/runtime)
 .openclaw/workspace*/media/
 .openclaw/workspace*/home/
+.openclaw/workspace*/memory/
 .openclaw/workspace*/.openclaw/
 .openclaw/workspace*/.pi/
 

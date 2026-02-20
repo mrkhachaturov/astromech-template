@@ -1,7 +1,0 @@
-# Copy to: ~/.config/environment.d/op.conf
-# chmod 600 ~/.config/environment.d/op.conf
-#
-# This file is loaded by systemd for ALL user services.
-# It provides the bootstrap token so `op run` can resolve op:// references.
-
-OP_SERVICE_ACCOUNT_TOKEN=your-1password-service-account-token-here
