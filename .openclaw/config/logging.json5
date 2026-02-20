@@ -1,0 +1,33 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 📝 LOGGING CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Controls gateway logging behavior, levels, and sensitive data redaction
+// File logs are JSONL format, console output is TTY-aware
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-16
+//
+// Log levels (most to least verbose):
+// - trace: Extremely detailed debugging information
+// - debug: Detailed debugging information
+// - info: General informational messages (default production)
+// - warn: Warning messages for potential issues
+// - error: Error messages for failures
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/logging.md:64-136
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/logging.md
+// 🤖 Wiki: just wiki-docs "logging configuration levels"
+// 🤖 Wiki: just wiki-docs "logging file format JSONL"
+
+{
+  // Log level for file logging (trace, debug, info, warn, error)
+  "level": "info",
+
+  // Log level for console output
+  "consoleLevel": "info",
+
+  // Redact sensitive data: "off" | "tools" | "all"
+  // - "tools": Redact sensitive tool parameters (API keys, tokens, etc.)
+  // - "all": Redact all sensitive data including message content
+  "redactSensitive": "tools"
+}

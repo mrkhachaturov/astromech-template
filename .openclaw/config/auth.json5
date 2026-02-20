@@ -1,0 +1,51 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔐 AUTHENTICATION PROFILES
+// ═══════════════════════════════════════════════════════════════════════════
+// Defines authentication profiles for different AI model providers
+// Actual secrets are stored in ~/.openclaw/agents/<agentId>/agent/auth-profiles.json
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-16
+//
+// Auth modes:
+// - token: Bearer token authentication (Anthropic API)
+// - api_key: API key authentication (Google, OpenRouter)
+// - oauth: OAuth2 flow (Claude subscription)
+// - setup-token: Long-lived token from claude setup-token
+//
+// Profile ID format: <provider>:<descriptor>
+// Example: anthropic:personal, google:work, openrouter:default
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/authentication.md:1-61
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/oauth.md
+// 🤖 Wiki: just wiki-docs "authentication profiles provider"
+// 🤖 Wiki: just wiki-docs "auth mode token vs oauth"
+
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // Authentication Profiles
+  // ─────────────────────────────────────────────────────────────────────────
+  "profiles": {
+    "anthropic:max-100-plan": {
+      "provider": "anthropic",
+      "mode": "token"
+    },
+    "google:default": {
+      "provider": "google",
+      "mode": "api_key"
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Profile Priority Order
+  // ─────────────────────────────────────────────────────────────────────────
+  // Defines the order in which profiles are tried when authenticating
+  // Used for fallback when primary profile fails or hits rate limits
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/model-failover.md:123-150
+  // 🤖 Wiki: just wiki-docs "auth order fallbacks"
+  "order": {
+    "anthropic": [
+      "anthropic:max-100-plan"
+    ]
+  }
+}

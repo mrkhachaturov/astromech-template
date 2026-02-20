@@ -1,0 +1,29 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🌐 BROWSER CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Headless Chromium for agent browser automation (gateway-level, main sessions only)
+//
+// Architecture:
+//   - Browser runs ON the gateway (not in sandbox containers)
+//   - Main agent sessions use this directly; sandbox/sub-agent sessions deny browser
+//   - Uses system Chromium (/usr/bin/chromium) — no Playwright browser download
+//
+// Headless-only: running on a headless VPS, no display server available.
+// noSandbox required: Docker containers cannot use kernel sandbox.
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/browser.md
+// 🤖 Wiki: just wiki-docs "browser configuration headless docker"
+// ═══════════════════════════════════════════════════════════════════════════
+
+{
+  "enabled": true,
+  "headless": true,
+  "noSandbox": true,
+
+  // Use system Chromium installed via apt in the gateway Dockerfile.
+  // Avoids downloading a separate Playwright-managed Chromium (~300MB).
+  "executablePath": "/usr/bin/chromium",
+
+  // Use the isolated openclaw-managed browser profile (not the chrome extension relay)
+  "defaultProfile": "openclaw"
+}

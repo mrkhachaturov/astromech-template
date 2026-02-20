@@ -1,0 +1,653 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🤖 DROID FLEET CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Astromech agent configuration for the entire droid fleet
+// Includes defaults and individual droid personalities
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.17
+// Last reviewed: 2026-02-18
+
+{
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AGENT DEFAULTS
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Default settings inherited by all agents unless overridden
+
+  "defaults": {
+    // ─────────────────────────────────────────────────────────────────────────
+    // Model Configuration
+    // ─────────────────────────────────────────────────────────────────────────
+    // Primary model + fallback chain for when primary fails
+    // Model selection order: primary → fallbacks (in order) → provider scan
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/models.md:42-91
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/configuration.md:97-142
+    // 🤖 Wiki: just wiki-docs "agent configuration model fallbacks"
+    // 🤖 Wiki: just wiki-docs "model selection order"
+    "model": {
+      "primary": "openai-codex/gpt-5.3-codex",
+      "fallbacks": [
+        "anthropic/claude-haiku-4-5-20251001",
+        "google/gemini-3-flash-preview"
+      ]
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Model Aliases
+    // ─────────────────────────────────────────────────────────────────────────
+    // Per-model thinkingDefault: overrides global thinkingDefault for each specific model
+    // Resolution: per-model → global (thinkingDefault: "medium") → catalog auto-detect
+    // 📄 Docs: agents/models/#18152 — per-model thinkingDefault overrides
+    "models": {
+      "anthropic/claude-opus-4-6": {
+        "alias": "opus",
+        // 1M context beta — opt-in per-model (Anthropic API only)
+        // Applied to all agents when they use opus (effectively Yoda primary + rare fallbacks)
+        // Schema: models only supported at agents.defaults level, not per-agent
+        // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/providers/anthropic.md:82-102
+        // "params": { "context1m": true },
+        // "thinkingDefault": "high"       // Yoda primary — deep reasoning justified [BLOCKED: schema bug #18152, re-enable when fixed]
+      },
+      "anthropic/claude-sonnet-4-6": {
+        "alias": "sonnet",
+        // "params": { "context1m": true },
+        // "thinkingDefault": "medium"     // fallback model [BLOCKED: schema bug #18152]
+      },
+      "anthropic/claude-haiku-4-5-20251001": {
+        "alias": "haiku",
+        // "thinkingDefault": "off"        // fallback model — no reasoning needed [BLOCKED: schema bug #18152]
+      },
+      "google/gemini-3-pro-preview": {
+        "alias": "gemini",
+        // "thinkingDefault": "low"        // capable fallback — light thinking [BLOCKED: schema bug #18152]
+      },
+      "google/gemini-3-flash-preview": {
+        "alias": "flash",
+        // "thinkingDefault": "off"        // fast/cheap fallback — no thinking [BLOCKED: schema bug #18152]
+      },
+      "openai/gpt-5-mini": {
+        "alias": "mini",
+        // "thinkingDefault": "off"        // mini model — no thinking [BLOCKED: schema bug #18152]
+      },
+      "openai-codex/gpt-5.3-codex": {
+        "alias": "codex"
+        // Primary model for all droids (except Yoda) + heartbeats + subagents
+      },
+      "openai-codex/gpt-5.2-codex": {
+        "alias": "codex52"
+      },
+      "openai-codex/gpt-5.1-codex-max": {
+        "alias": "codex-max"
+      },
+      "openai-codex/gpt-5.1-codex-mini": {
+        "alias": "codex-mini"
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Agent Behavior
+    // ─────────────────────────────────────────────────────────────────────────
+    "userTimezone": "Europe/Moscow",
+    "envelopeTimezone": "user",     // Use userTimezone for message timestamps
+    "timeFormat": "24",              // 24-hour time format
+    "thinkingDefault": "medium",
+    "typingMode": "instant",
+    "typingIntervalSeconds": 6,
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Memory Search (Vector + Hybrid Search + Session Memory)
+    // ─────────────────────────────────────────────────────────────────────────
+    // Semantic search over workspace memory files AND session history
+    // Uses OpenAI embeddings with Gemini fallback + sqlite-vec acceleration
+    // Combines vector embeddings with keyword search via hybrid RRF fusion
+    // Session memory is experimental and indexes conversation history
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/memory.md:79-142
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/memory.md:473-542
+    // 🤖 Wiki: just wiki-docs "memory session search experimental"
+    // 🤖 Wiki: just wiki-docs "sqlite-vec vector acceleration"
+    "memorySearch": {
+      "provider": "openai",
+      "model": "text-embedding-3-small",
+      "fallback": "gemini",
+
+      // Experimental: Enable session memory indexing
+      // Indexes conversation history for semantic recall across sessions
+      "experimental": {
+        "sessionMemory": true
+      },
+      "sources": ["memory", "sessions"],
+
+      // OpenAI Batch API for faster bulk indexing
+      "remote": {
+        "batch": {
+          "enabled": true,
+          "wait": true,           // Wait for batch completion (ensures complete indexing)
+          "concurrency": 2,       // 2 parallel batch jobs
+          "pollIntervalMs": 2000, // Check batch status every 2s
+          "timeoutMinutes": 60    // 1-hour timeout for large indexing jobs
+        }
+      },
+
+      // SQLite-vec: Accelerates vector queries inside SQLite
+      // Falls back to JS cosine similarity if extension unavailable
+      "store": {
+        "vector": {
+          "enabled": true
+        }
+      },
+
+      // Sync configuration: when to trigger indexing
+      "sync": {
+        "watch": true,  // Auto-reindex when memory files change
+
+        // Session indexing thresholds (debounced, async)
+        "sessions": {
+          "deltaBytes": 100000,   // Index after ~100 KB of new session data
+          "deltaMessages": 50     // OR after 50 new messages (whichever first)
+        }
+      },
+
+      // Hybrid search: combines vector similarity + BM25 keyword matching
+      "query": {
+        "hybrid": {
+          "enabled": true,
+          "vectorWeight": 0.7,          // 70% weight to semantic similarity
+          "textWeight": 0.3,            // 30% weight to keyword matching
+          "candidateMultiplier": 4,     // Fetch 4x candidates before fusion
+
+          // Diversity: reduces duplicate/near-identical results
+          // When daily notes repeat the same topic across multiple days,
+          // agent gets varied snippets instead of 5 nearly identical ones
+          "mmr": {
+            "enabled": true,
+            "lambda": 0.7               // 0 = max diversity, 1 = pure relevance
+          },
+
+          // Recency: boosts newer memories, decays older ones exponentially
+          // Prevents old well-worded notes from outranking yesterday's update
+          // halfLife 30d: 7 days ago = 84%, 30 days = 50%, 3 months = 12.5%
+          // MEMORY.md and non-dated files (memory/projects.md) are never decayed
+          "temporalDecay": {
+            "enabled": true,
+            "halfLifeDays": 30
+          }
+        }
+      },
+
+      // Embedding cache: speeds up repeated queries
+      "cache": {
+        "enabled": true,
+        "maxEntries": 50000
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Context Management
+    // ─────────────────────────────────────────────────────────────────────────
+    // Context pruning: removes old messages based on TTL or cache strategy
+    // Compaction: triggers memory flush before context limit
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/compaction.md:44-62
+    // 🤖 Wiki: just wiki-docs "context pruning compaction"
+    "contextPruning": {
+      "mode": "cache-ttl",
+      "ttl": "1h",
+      "keepLastAssistants": 3
+    },
+
+    "compaction": {
+      "mode": "safeguard",
+      "reserveTokensFloor": 20000,
+      "memoryFlush": {
+        "enabled": true,
+        "softThresholdTokens": 6000,
+        "systemPrompt": "Session nearing compaction. Store durable memories now.",
+        "prompt": "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store."
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Streaming & Response
+    // ─────────────────────────────────────────────────────────────────────────
+    "blockStreamingDefault": "on",
+    "blockStreamingChunk": {
+      "minChars": 800,
+      "maxChars": 1200
+    },
+    "blockStreamingCoalesce": {
+      "idleMs": 1000
+    },
+    "humanDelay": {
+      "mode": "natural"
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Heartbeat & Concurrency
+    // ─────────────────────────────────────────────────────────────────────────
+    // Periodic agent turns for background monitoring and check-ins
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/heartbeat.md
+    // 🤖 Wiki: just wiki-docs "heartbeat configuration activeHours"
+    "heartbeat": {
+      "every": "4h",                    // Check every 4 hours
+      "model": "openai-codex/gpt-5.1-codex-mini",  // Mini model for heartbeats — faster, cheaper, 400K context
+      "includeReasoning": false,        // Don't send separate Reasoning: messages
+      "target": "last",                 // Send to last used channel
+      "ackMaxChars": 300,               // Max chars after HEARTBEAT_OK before delivery
+
+      // Active hours: restrict heartbeats to Moscow daytime (9 AM - 9 PM)
+      "activeHours": {
+        "start": "09:00",               // Start at 9:00 AM
+        "end": "21:00",                 // End at 9:00 PM (21:00)
+        "timezone": "Europe/Moscow"     // Uses Moscow time (or "user" to use userTimezone)
+      },
+
+      // Default prompt (reads HEARTBEAT.md if exists)
+      "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK."
+    },
+    "maxConcurrent": 4,
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Subagents Configuration
+    // ─────────────────────────────────────────────────────────────────────────
+    // Settings for spawned subagents (parallel task execution)
+    // Uses codex as primary, with gemini/haiku fallbacks
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/subagents.md:43-74
+    // 🤖 Wiki: just wiki-docs "subagents configuration model"
+    "subagents": {
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": [
+          "anthropic/claude-haiku-4-5-20251001",
+          "google/gemini-3-flash-preview"
+        ]
+      },
+      "thinking": "low",
+      "maxSpawnDepth": 2,        // Enable nested sub-agents (orchestrator pattern)
+      "maxChildrenPerAgent": 5,  // Max active children per agent session
+      "maxConcurrent": 8,
+      "archiveAfterMinutes": 60
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Sandbox Configuration
+    // ─────────────────────────────────────────────────────────────────────────
+    // Docker-based isolation for agent execution
+    // Modes: off (disabled) | non-main (all except main) | all (all agents)
+    // Scope: session (per-session) | agent (per-agent) | shared (one container)
+    // Workspace access: ro (read-only) | rw (read-write)
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/cli/sandbox.md:1-57
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/sandboxing.md:111-161
+    // 🤖 Wiki: just wiki-docs "sandbox configuration docker mode"
+    // 🤖 Wiki: just wiki-docs "sandbox scope session agent shared"
+    "sandbox": {
+      "mode": "non-main",    // All 11 agents' main sessions on gateway, sub-agents in sandbox
+      "scope": "agent",      // One container per agent, reused across all its sub-agent sessions
+      "workspaceAccess": "rw",
+      "docker": {
+        "image": "astromech-sbx-base:v1",
+        "network": "bridge",
+        "containerPrefix": "astromech-sbx-",
+        "env": {
+          // mcporter uses this as default config path (agents override per-workspace via --config flag)
+          "MCPORTER_CONFIG": "/home/node/.openclaw/mcporter.json"
+        }
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DROID FLEET ROSTER
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Individual agent configurations with custom sandboxes
+
+  "list": [
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🧙 Yoda - The Wise Mentor (Main Agent)
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "yoda",
+      "default": true,
+      "name": "Yoda",
+      "workspace": "/home/node/.openclaw/workspace-yoda",
+      "agentDir": "/home/node/.openclaw/agents/yoda/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-yoda:v1"
+        }
+      },
+
+      // Allow Yoda to use the Lobster workflow tool (optional plugin, gateway-only — not in sandbox)
+      "tools": {
+        "allow": ["lobster"]
+      },
+
+      // Yoda primary: opus — strategic advisor, mentor, deep reasoning always on
+      "model": {
+        "primary": "anthropic/claude-opus-4-6",
+        "fallbacks": [
+          "anthropic/claude-sonnet-4-6",
+          "google/gemini-3-flash-preview"
+        ]
+      },
+
+      // Allow Yoda to spawn and communicate with all droids
+      "subagents": {
+        "allowAgents": ["*"]  // "*" = allow all agents
+      },
+
+      // Heartbeat configuration (customize interval and working hours per-agent)
+      "heartbeat": {
+        "every": "0m",  // Disabled — enable per-agent when ready
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🔧 R2-D2 - The Versatile Astromech
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "r2d2",
+      "name": "R2D2",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": [
+          "anthropic/claude-haiku-4-5-20251001",
+          "google/gemini-3-flash-preview"
+        ]
+      },
+      "workspace": "/home/node/.openclaw/workspace-r2d2",
+      "agentDir": "/home/node/.openclaw/agents/r2d2/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-r2d2:v1"
+        }
+      },
+      // "elevatedDefault": "full",
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🟠 BB-8 - The Spherical Scout
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "bb8",
+      "name": "BB8",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-bb8",
+      "agentDir": "/home/node/.openclaw/agents/bb8/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-bb8:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ⚫ BB-9E - The Dark Side Companion
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "bb9e",
+      "name": "bb9e",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-bb9e",
+      "agentDir": "/home/node/.openclaw/agents/bb9e/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-bb9e:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🗣️ C-3PO - The Protocol Specialist
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "c3po",
+      "name": "c3po",
+      // C-3PO primary: sonnet — knowledge librarian & co-writer, nuanced writing and research
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-6",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-c3po",
+      "agentDir": "/home/node/.openclaw/agents/c3po/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-c3po:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🤖 CB-23 - The Resistance Recon Droid
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "cb23",
+      "name": "cb23",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-cb23",
+      "agentDir": "/home/node/.openclaw/agents/cb23/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-cb23:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🔴 R5-D4 - The Red Astromech
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "r5d4",
+      "name": "r5d4",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-r5d4",
+      "agentDir": "/home/node/.openclaw/agents/r5d4/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-r5d4:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🟡 R4-P17 - Obi-Wan's Companion
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "r4p17",
+      "name": "r4p17",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-r4p17",
+      "agentDir": "/home/node/.openclaw/agents/r4p17/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-r4p17:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ⚪ D-O - The Cone-Headed Helper
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "d0",
+      "name": "d0",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-d0",
+      "agentDir": "/home/node/.openclaw/agents/d0/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-d0:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🎮 L3-37 - The Self-Made Pilot Droid (health & fitness agent)
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "l337",
+      "name": "l337",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-l337",
+      "agentDir": "/home/node/.openclaw/agents/l337/agent",
+      "sandbox": {
+        "mode": "all",  // Always sandboxed — ensures whoopskill runs in custom image with correct binds/env
+        "docker": {
+          "image": "astromech-sbx-l337:v1",
+          "network": "sandbox-net",
+          "binds": [
+            "${RKDIR}/.whoop-up:/home/node/.whoop-up:rw",
+            "${RKDIR}/.hvault:/home/node/.hvault:rw"
+          ],
+          "env": {
+            // Whoop-up (WHOOP_CLIENT_CRED avoids OpenClaw sandbox env sanitizer: _SECRET suffix blocked)
+            "WHOOP_CLIENT_ID": "${WHOOP_CLIENT_ID}",
+            "WHOOP_CLIENT_CRED": "${WHOOP_CLIENT_SECRET}",
+            "WHOOP_REDIRECT_URI": "https://ai.${DOMAIN}/hooks/whoop",
+            "WHOOP_TOKEN_DIR": "/home/node/.whoop-up",
+            // Hae-vault (HVAULT_AUTH is official alias in hae-vault@0.3.1; also avoids _TOKEN sanitizer block)
+            "HVAULT_WATCH_DIR": "/home/node/.hvault/import",
+            "HVAULT_WATCH_INTERVAL": "60",
+            "HVAULT_DB_PATH": "/home/node/.hvault/data/health.db",
+            "HVAULT_AUTH": "${HVAULT_BEARER_TOKEN}",
+            // mcporter — always sandboxed, use per-workspace config mounted at /workspace
+            "MCPORTER_CONFIG": "/workspace/config/mcporter.json"
+          }
+        }
+      },
+      "heartbeat": {
+        "every": "4h",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🔵 K-2SO - The Reprogrammed Imperial Droid
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+      "id": "k2s0",
+      "name": "k2s0",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": ["anthropic/claude-haiku-4-5-20251001", "google/gemini-3-flash-preview"]
+      },
+      "workspace": "/home/node/.openclaw/workspace-k2s0",
+      "agentDir": "/home/node/.openclaw/agents/k2s0/agent",
+      "sandbox": {
+        "docker": {
+          "image": "astromech-sbx-k2s0:v1"
+        }
+      },
+      "heartbeat": {
+        "every": "0m",
+        "model": "openai-codex/gpt-5.1-codex-mini",
+        "activeHours": {
+          "start": "09:00",
+          "end": "21:00",
+          "timezone": "Europe/Moscow"
+        }
+      }
+    }
+  ]
+}

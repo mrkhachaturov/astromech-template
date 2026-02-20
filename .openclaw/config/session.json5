@@ -1,0 +1,66 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔗 SESSION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Session scoping and agent-to-agent communication settings
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-17
+//
+// Session scopes:
+// - per-sender: Each sender gets their own session (default)
+// - per-channel: All users in a channel share one session
+// - per-group: All users in a group share one session
+//
+// DM scopes:
+// - main: All DMs collapse to one main session (default)
+// - per-peer: Each DM peer gets separate session
+// - per-channel-peer: Separate sessions per channel+peer
+// - per-account-channel-peer: Separate sessions per account+channel+peer
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/configuration-reference.md:1104-1179
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/session-tool.md:93-132
+// 🤖 Wiki: just wiki-docs "session configuration scope dmScope"
+
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // Session Scoping
+  // ─────────────────────────────────────────────────────────────────────────
+  // Default session isolation mode
+  "scope": "per-sender",
+
+  // DM session scope mode (how direct messages are grouped into sessions)
+  "dmScope": "main",
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 🔄 Automatic Session Reset (NEW in 2026.2.15)
+  // ─────────────────────────────────────────────────────────────────────────
+  // Automatically reset sessions based on time or idle duration
+  // Mode: daily (fixed time) | idle (inactivity)
+  // When both configured: whichever expires first wins (OR logic)
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/session.md:153-173
+  // 🤖 Wiki: just wiki-docs "session reset daily idle configuration"
+  "reset": {
+    "mode": "daily",       // Daily reset mode
+    "atHour": 4,           // Reset at 4:00 AM (gateway host local time)
+    "idleMinutes": 180     // OR reset after 3 hours of inactivity (180 min)
+  },
+  // Notes:
+  // - Daily reset happens at 4:00 AM every day
+  // - Idle reset triggers after 3 hours of no messages
+  // - Whichever condition is met first will trigger the reset
+  // - After reset, next message starts a fresh session
+  // - Original transcript is preserved (new sessionId created)
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 🤖 Agent-to-Agent Communication
+  // ─────────────────────────────────────────────────────────────────────────
+  // Controls ping-pong dialog limits between agents using sessions_send
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/multi-agent.md
+  // 🤖 Wiki: just wiki-docs "agent to agent ping pong maxPingPongTurns"
+  "agentToAgent": {
+    // Maximum number of back-and-forth turns in agent-to-agent dialog
+    // Higher value = longer conversations, but more token usage
+    // After this limit, the ping-pong stops automatically
+    "maxPingPongTurns": 5
+  }
+}

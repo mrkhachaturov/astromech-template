@@ -1,0 +1,63 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🪝 HOOKS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Internal event-driven hooks for agent lifecycle automation
+// ═══════════════════════════════════════════════════════════════════════════
+
+{
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        // ─────────────────────────────────────────────────────────────────
+        // 🧠 Global Memory Inject
+        // ─────────────────────────────────────────────────────────────────
+        // Fetch memories from OpenMemory on /new and inject into USER.md
+        // agentCategories: per-agent category allowlist
+        //   - absent or [] = no filter, inject ALL categories
+        //   - [list] = inject only memories matching those categories
+        //
+        // Categories: personal | health | preferences | behavior-rules |
+        //             work | technical | business | values
+        "global-memory-inject": {
+          "enabled": true,
+          // NOTE: existing memories use old category names (pre-taxonomy migration).
+          // New memories will use the 8-category taxonomy above.
+          // Adjust filters after re-categorizing old memories if needed.
+          "agentCategories": {
+            // ── yoda: executive, full fleet visibility → everything
+            // omitted = no filter (all categories)
+
+            // ── r2d2: infra ops → technical + work context
+            "r2d2": ["technical", "work", "preferences", "behavior-rules"],
+
+            // ── l337: health chief → health + personal context
+            "l337": ["health", "personal", "preferences", "behavior-rules"],
+
+            // ── k2s0: mission planner / OKRs → work + business + values (goals)
+            "k2s0": ["personal", "preferences", "behavior-rules", "work", "business", "values"],
+
+            // ── r4p17: finance analyst → business + work context
+            "r4p17": ["personal", "preferences", "behavior-rules", "business", "work"],
+
+            // ── bb8: marketing analyst → business context for decisions
+            "bb8": ["personal", "preferences", "behavior-rules", "business", "work"],
+
+            // ── bb9e: HR analytics → work context for staff patterns
+            "bb9e": ["personal", "preferences", "behavior-rules", "work", "business"],
+
+            // ── c3po: knowledge librarian / co-writer → work + values (writing voice)
+            "c3po": ["personal", "preferences", "behavior-rules", "work", "values"],
+
+            // ── d0: social media manager → business context for brand voice
+            "d0": ["personal", "preferences", "behavior-rules", "business"],
+
+            // ── garage (reserved) → minimal context
+            "cb23": ["personal", "preferences", "behavior-rules"],
+            "r5d4": ["personal", "preferences", "behavior-rules"],
+          },
+        },
+      },
+    },
+  },
+}

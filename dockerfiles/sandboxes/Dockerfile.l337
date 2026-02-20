@@ -1,0 +1,20 @@
+# L337 Sandbox
+# Health & fitness agent 
+
+FROM astromech-sbx-base:v1
+
+USER root
+#WHOOP integration
+RUN npm install -g whoop-up@1.0.3
+#Apple Health integration 
+RUN npm install -g hae-vault@0.3.1
+COPY --chown=node:node dockerfiles/sandboxes/config/l337/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+USER node
+
+ENV HVAULT_PORT=4242
+
+EXPOSE 4242
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD []

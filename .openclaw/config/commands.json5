@@ -1,0 +1,38 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// ⚡ COMMAND SETTINGS
+// ═══════════════════════════════════════════════════════════════════════════
+// Controls native command and skill command availability
+// Slash commands provide quick access to bot functionality (e.g., /help, /status)
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-16
+//
+// Command modes:
+// - auto: Enabled when appropriate (context-aware)
+// - on: Always enabled (all channels)
+// - off: Completely disabled
+//
+// Native commands: Built-in bot commands (/help, /status, /model, etc.)
+// Skill commands: Commands from loaded skills (/commit, /review-pr, etc.)
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/slash-commands.md
+// 🤖 Wiki: just wiki-docs "commands slash configuration"
+
+{
+  // Native commands (built-in): "auto" | "on" | "off"
+  // - "auto": Enabled when appropriate
+  // - "on": Always enabled
+  // - "off": Disabled
+  "native": "auto",
+
+  // Native skill commands: "auto" | "on" | "off"
+  "nativeSkills": "auto",
+
+  // Host shell command: ! <cmd> (alias: /bash <cmd>)
+  // Requires tools.elevated.enabled + sender in tools.elevated.allowFrom
+  // "bash": true,
+  // "bashForegroundMs": 2000,
+
+  // /restart — restarts the gateway process
+  "restart": true
+}

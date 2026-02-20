@@ -1,0 +1,17 @@
+# BB8 Sandbox - Minimal Reconnaissance Agent
+# Ultra-minimal toolset for read-only operations and data gathering
+FROM astromech-sbx-base:v1
+
+# Switch to root for installations
+USER root
+
+# Install additional minimal tools not in base
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    file \
+  && rm -rf /var/lib/apt/lists/*
+
+# Switch back to sandbox user
+USER sandbox
+WORKDIR /home/sandbox
+

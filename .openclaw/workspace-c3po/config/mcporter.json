@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "globalmemory": {
+      "baseUrl": "http://globalmemory-mcp:8765/mcp/astromech/sse/YOUR_USERNAME"
+    }
+  },
+  "imports": []
+}

@@ -1,0 +1,36 @@
+services:
+  astromech-cli:
+    image: astromech:${ASTROMECH_VERSION:-2026.2.13}
+    container_name: astromech-cli
+
+    environment:
+      HOME: /home/node
+      XDG_CONFIG_HOME: /home/node/.openclaw
+      NODE_ENV: production
+      TERM: xterm-256color
+      TZ: ${TZ}
+      DOMAIN: ${DOMAIN}
+      # 1Password Service Account Token (entrypoint will load secrets)
+      OP_SERVICE_ACCOUNT_TOKEN: ${OP_SERVICE_ACCOUNT_TOKEN}
+      # Gateway token loaded by entrypoint from 1Password
+      # OPENCLAW_GATEWAY_TOKEN is set by entrypoint
+      # Prevent browser from opening in CLI mode
+      BROWSER: echo
+
+    volumes:
+      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
+      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      
+
+    networks:
+      - gateway-net
+
+    # Enable interactive mode for shells
+    stdin_open: true  # Keep STDIN open for interactive input
+    tty: true         # Allocate pseudo-TTY for terminal features
+    # init: true      # NOT needed - tini already in ENTRYPOINT
+
+    # Don't auto-start with 'docker compose up'
+    # Use: docker compose run --rm astromech-cli <command>
+    profiles:
+      - cli

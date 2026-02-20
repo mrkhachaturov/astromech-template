@@ -1,0 +1,6 @@
+# OpenClaw Skills Manifest
+# Skills are auto-installed on container startup via entrypoint.sh
+# Add ClawHub skill names here, one per line
+
+# Self-Improvement Skill
+# self-improving-agent

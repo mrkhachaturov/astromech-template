@@ -1,0 +1,59 @@
+########################### THIS COMPOSE FILE
+
+########################### NETWORKS
+networks:
+  socket-proxy:
+    name: socket-proxy
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
+        
+  gateway-net:
+    name: gateway-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.1.0/24
+
+  sidecar-net:
+    name: sidecar-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.2.0/24
+
+  tunnel-net:
+    name: tunnel-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.3.0/24
+
+  sandbox-net:
+    name: sandbox-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.4.0/24
+
+#   trf_proxy:
+#     name: trf_proxy
+#     driver: macvlan
+#     driver_opts:
+#       parent: ens18
+#     ipam:
+#       config:
+#         - subnet: 10.1.140.0/24
+#           gateway: 10.1.140.1
+#           ip_range: 10.1.140.224/27
+
+
+# Docker Compose v2.20 or greater required to use "include"
+include:
+  ########################### SERVICES
+  - compose/gateway.yml
+  - compose/cli.yml
+  - compose/socket-proxy.yml
+  - compose/newt.yml

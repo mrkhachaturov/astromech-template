@@ -1,0 +1,233 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🛠️ TOOLS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Global and per-agent tool allow/deny policies
+// Controls which tools are available to agents in different contexts
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-16
+//
+// Tool groups:
+// - group:fs: read, write, edit, apply_patch
+// - group:sessions: sessions_list, sessions_history, sessions_send, sessions_spawn, session_status
+// - group:memory: memory_search, memory_get
+// - group:ui: browser, canvas
+// - group:automation: cron, gateway
+// - group:messaging: message
+// - group:nodes: nodes
+// - group:openclaw: all built-in OpenClaw tools
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/multi-agent-sandbox-tools.md
+// 🤖 Wiki: just wiki-docs "tools allow deny configuration sandbox"
+
+{
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GLOBAL TOOL ALLOWLIST
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Additional tools to allow for all agents (additive to defaults)
+  // Optional plugin tools require explicit enablement
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/lobster.md
+  // 🤖 Wiki: just wiki-docs "tools alsoAllow plugin optional"
+
+  // "alsoAllow": []  // Uncomment to add global tools; lobster is per-agent (see agents.json5)
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AGENT-TO-AGENT COMMUNICATION
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Enables direct messaging between agents using sessions_send tool
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/concepts/multi-agent.md:191-196
+  // 🤖 Wiki: just wiki-docs "agent to agent messaging sessions_send"
+
+  "agentToAgent": {
+    // ─────────────────────────────────────────────────────────────────────────
+    // Enable Agent-to-Agent Messaging
+    // ─────────────────────────────────────────────────────────────────────────
+    // Set to true to allow agents to send messages to each other
+    "enabled": true,
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Allowlist
+    // ─────────────────────────────────────────────────────────────────────────
+    // List of agent IDs that can participate in agent-to-agent communication
+    // Use ["*"] to allow all agents to communicate with each other
+    "allow": [
+      "main",   // Yoda - can communicate with all
+      "r2d2",
+      "bb8",
+      "bb9e",
+      "c3po",
+      "cb23",
+      "r5d4",
+      "r4p17",
+      "d0",
+      "l337",
+      "k2s0"
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SUB-AGENT TOOLS
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Explicit tool policy for ALL sub-agent runs (depth 1 + depth 2)
+  //
+  // When "allow" is set → allowlist mode: ONLY listed tools are available (deny still wins)
+  // Without "allow" → sub-agents inherit ALL tools (only deny is applied)
+  //
+  // Note: depth-1 orchestrators (maxSpawnDepth >= 2) automatically receive
+  //   sessions_spawn + subagents + sessions_list + sessions_history ON TOP of this policy
+  //
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/subagents.md:159-192
+  // 🤖 Wiki: just wiki-docs "tools.subagents tool policy allow deny"
+
+  "subagents": {
+    "tools": {
+      // ─────────────────────────────────────────────────────────────────────────
+      // Explicit allowlist — only these tools are available to sub-agents
+      // ─────────────────────────────────────────────────────────────────────────
+      "allow": [
+        // Filesystem operations
+        "read",
+        "write",
+        "edit",
+        "apply_patch",
+
+        // Command execution
+        "exec",
+        "process",
+
+        // Memory search (QMD)
+        "memory_search",
+        "memory_get",
+
+        // Session tools (needed by orchestrators; auto-added for depth-1 by runtime)
+        "sessions_list",
+        "sessions_history",
+        "sessions_send",
+        "sessions_spawn",
+        "session_status",
+        "agents_list",
+
+        // Image tools
+        "image",
+
+        // Web tools
+        "web_search",
+        "web_fetch"
+      ],
+
+      // ─────────────────────────────────────────────────────────────────────────
+      // Explicit denylist — deny wins even if listed in allow above
+      // ─────────────────────────────────────────────────────────────────────────
+      "deny": [
+        "browser",    // Host-only, breaks isolation
+        "canvas",     // Requires host display server
+        "gateway",    // Admin-only gateway management
+        "cron",       // System-level scheduling
+        "lobster",    // Workflow tool — main agent only (gateway session)
+        "nodes"       // Not needed for sub-agent tasks
+      ]
+    }
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SANDBOX TOOLS (for sandboxed agents)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Controls which tools are available inside sandbox containers
+  // This applies to agents with sandbox.mode: "all" or "non-main"
+
+  "sandbox": {
+    "tools": {
+      // ─────────────────────────────────────────────────────────────────────────
+      // Allowed Tools
+      // ─────────────────────────────────────────────────────────────────────────
+      // Core filesystem tools + memory search
+      "allow": [
+        // Filesystem operations
+        "read",
+        "write",
+        "edit",
+        "apply_patch",
+
+        // Command execution
+        "exec",
+        "process",
+
+        // Memory search (QMD)
+        "memory_search",
+        "memory_get",
+
+        // Session management
+        "sessions_list",
+        "sessions_history",
+        "sessions_send",
+        "sessions_spawn",
+        "session_status",
+        "agents_list",    // List available agents for communication
+
+        // Image tools
+        "image",
+
+        // Web tools
+        "web_search",
+        "web_fetch"
+      ],
+
+      // ─────────────────────────────────────────────────────────────────────────
+      // Denied Tools
+      // ─────────────────────────────────────────────────────────────────────────
+      // Deny host-only tools that break sandbox isolation
+      "deny": [
+        "browser",    // Runs on host, breaks sandbox isolation
+        "canvas",     // Requires display server on host
+        "gateway",    // Gateway management (admin only)
+        "cron"        // System-level scheduling
+      ]
+    }
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ELEVATED (HOST) EXEC ACCESS
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Required for ! <cmd> / /bash <cmd> shell passthrough from chat
+  // Per-agent override (agents.list[].tools.elevated) can only further restrict
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/configuration-reference.md:1376
+  // 🤖 Wiki: just wiki-docs "tools elevated allowFrom bash command"
+
+  // "elevated": {
+  //   "enabled": true,
+  //   "allowFrom": {
+  //     "telegram": ["${RK_TG_USER_ID}"]
+  //   }
+  // },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WEB TOOLS (web_search + web_fetch)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Perplexity Sonar for AI-synthesized web search with citations
+  // Alternative: set provider to "brave" and configure brave.apiKey
+  //
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/perplexity.md
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/web.md
+  // 🤖 Wiki: just wiki-docs "perplexity web search configuration"
+  //
+  // Models:
+  //   perplexity/sonar             — fast Q&A
+  //   perplexity/sonar-pro         — multi-step reasoning (default)
+  //   perplexity/sonar-reasoning-pro — deep research / chain-of-thought
+  //
+  // API key: add PERPLEXITY_API_KEY=pplx-... to .openclaw/.env
+  //          OR use OpenRouter: OPENROUTER_API_KEY=sk-or-...
+  //             and set baseUrl to "https://openrouter.ai/api/v1"
+
+  "web": {
+    "search": {
+      "enabled": true,
+      "provider": "perplexity",
+      "perplexity": {
+        "apiKey": "${PERPLEXITY_API_KEY}",
+        "baseUrl": "https://api.perplexity.ai",
+        "model": "perplexity/sonar-pro"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  // Treat openclaw.json as JSONC (JSON with Comments)
+  "files.associations": {
+    "**/openclaw.json": "jsonc",
+    "**/.openclaw/openclaw.json": "jsonc",
+    "**/.openclaw/config/*.json5": "jsonc"
+  },
+
+  // Enable formatting for JSONC files
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
+}

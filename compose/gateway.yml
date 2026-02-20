@@ -1,0 +1,90 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# OpenClaw Gateway Service
+# ═══════════════════════════════════════════════════════════════════════════
+# Multi-agent AI gateway with Docker sandbox support for agent isolation
+#
+# PREREQUISITES FOR SANDBOX MODE:
+# ───────────────────────────────────────────────────────────────────────────
+# 1. Socket Proxy: Deploy socket-proxy.yml first (provides controlled Docker
+#    socket access with EXEC=1, ALLOW_START=1, ALLOW_STOP=1)
+#
+# 2. Host Symlink (CRITICAL for nested containers):
+#    sudo ln -s /path/to/astromech /home/node
+#
+#    WHY: Gateway runs in Docker and creates sandbox containers. When gateway
+#    requests Docker to mount /home/node/.openclaw/workspace-*, Docker looks
+#    for this path on the HOST, not inside gateway container. The symlink
+#    translates gateway paths to actual host paths.
+#
+#    Without this: Sandboxes get empty workspace (Docker creates missing dirs)
+#    With this: Sandboxes mount real workspace with read/write access
+#
+# 3. Docker Binary: Mounted read-only at /usr/bin/docker (see volumes below)
+#    Allows gateway to execute docker CLI commands via socket proxy
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  astromech-gateway:
+    image: astromech:${ASTROMECH_VERSION:-2026.2.19-2}
+    container_name: astromech-gateway
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+    environment:
+      HOME: /home/node
+      NODE_ENV: production
+      TERM: xterm-256color
+      TZ: ${TZ}
+      DOCKER_HOST: "tcp://docker-socket-proxy:2375"
+      # # Suppress node-llama-cpp CUDA compilation warnings (prevents QMD JSON parsing errors)
+      # NODE_NO_WARNINGS: "1"
+      # 1Password Service Account Token (read secrets in entrypoint)
+      OP_SERVICE_ACCOUNT_TOKEN: ${OP_SERVICE_ACCOUNT_TOKEN}
+      DOMAIN: ${DOMAIN}
+      TELEGRAM_BOT_BBYODA_TOKEN: ${TELEGRAM_BOT_BBYODA_TOKEN}
+      OPENCLAW_GATEWAY_BIND: ${OPENCLAW_GATEWAY_BIND}
+      OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT}
+      RKDIR: ${RKDIR}
+
+      # mcporter MCP client config (shared across gateway + sandboxes)
+      MCPORTER_CONFIG: "/home/node/.openclaw/mcporter.json"
+
+      # ─────────────────────────────────────────────────────────────────────────
+      # brain-cli Configuration
+      # ─────────────────────────────────────────────────────────────────────────
+      # Root directory for PARA-style markdown "second brain" structure
+      # Contains personal/, business/, shared/ subdirectories
+      BRAIN_ROOT: "/home/node/.openclaw/brain"
+      # JSON mode for piping between commands in Lobster workflows
+      JSON_MODE: "false"
+      # AI categorization: true = require AI, false = keywords only, unset = auto-detect
+      # USE_AI: "true"
+      
+    volumes:
+      # OpenClaw configuration and agent workspaces
+      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
+      # - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+
+      # Docker CLI binary (required for sandbox container management)
+      # Gateway uses this to create/manage sandbox containers via socket proxy
+      - /usr/bin/docker:/usr/bin/docker:ro
+    networks:
+      - gateway-net
+      - tunnel-net
+      - socket-proxy
+      - sidecar-net
+
+    ports:
+      # Bind to host's LAN IP
+      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:${OPENCLAW_GATEWAY_PORT}"
+      - "127.0.0.1:${OPENCLAW_WEBTOKEN_PORT}:${OPENCLAW_WEBTOKEN_PORT}"
+
+    command: openclaw gateway --bind ${OPENCLAW_GATEWAY_BIND} --port ${OPENCLAW_GATEWAY_PORT}
+
+    # healthcheck:
+    #   test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:${OPENCLAW_GATEWAY_PORT}/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 30s

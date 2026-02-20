@@ -1,0 +1,41 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🛠️ SKILLS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Enables/disables specific skills and manages skill configuration
+// Skills are AgentSkills-compatible SKILL.md files loaded from bundled and custom directories
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-16
+//
+// Skills loading:
+// - Bundled skills from OpenClaw installation
+// - Custom skills from extraDirs (e.g., ~/custom-skills)
+// - Watch mode: reload skills when SKILL.md files change
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/skills-config.md:1-52
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/skills.md
+// 🤖 Wiki: just wiki-docs "skills configuration load install"
+// 🤖 Wiki: just wiki-docs "skills load extraDirs watch"
+
+{
+  "entries": {
+    // ─────────────────────────────────────────────────────────────────────────
+    // 1Password Integration
+    // ─────────────────────────────────────────────────────────────────────────
+    "1password": {
+      "enabled": false
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MCPorter — MCP client CLI
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lets agents call any MCP server (Linear, Context7, Vercel, etc.) via exec
+    // Binary installed in: gateway Dockerfile (npm install -g mcporter)
+    // Sandbox: enabled once base image switches to node (Dockerfile.base)
+    // Config: place mcporter.json in agent workspace at config/mcporter.json
+    // Docs: https://mcporter.dev
+    "mcporter": {
+      "enabled": true
+    }
+  }
+}

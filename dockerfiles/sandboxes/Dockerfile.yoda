@@ -1,0 +1,8 @@
+# Yoda Sandbox - Main Agent
+# Base toolset with room for future customization
+FROM astromech-sbx-base:v1
+
+# Future: add yoda-specific tools here
+# Example:
+# RUN apt-get update && apt-get install -y nodejs npm
+

@@ -1,0 +1,17 @@
+services:
+  newt:
+    image: fosrl/newt
+    container_name: newt
+    restart: unless-stopped
+    environment:
+      PANGOLIN_ENDPOINT: "https://pangolin.${DOMAIN}"
+      NEWT_ID: ${NEWT_ID}
+      NEWT_SECRET: ${NEWT_SECRET}
+    networks:
+      - tunnel-net
+      - sandbox-net
+      - sidecar-net
+
+    # depends_on:
+    #   openclaw-gateway:
+    #     condition: service_healthy

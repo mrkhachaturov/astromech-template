@@ -1,0 +1,85 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 💬 MESSAGE SETTINGS
+// ═══════════════════════════════════════════════════════════════════════════
+// Controls message acknowledgment and reaction behavior
+// Configures how the bot responds to incoming messages (reactions, acknowledgments, etc.)
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-16
+//
+// Acknowledgment reaction scopes:
+// - all: React to all incoming messages (DMs and groups)
+// - group-mentions: React only when mentioned in groups
+// - off: Disable acknowledgment reactions entirely
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/configuration-reference.md
+// 🤖 Wiki: just wiki-docs "messages configuration"
+
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // 👀 Acknowledgment Reactions
+  // ─────────────────────────────────────────────────────────────────────────
+  // React to messages to show the bot is processing
+  // Scopes: all | direct | group-mentions | group-all | off
+  // For DM-only setup: "direct" reacts to all DM messages
+  "ackReactionScope": "direct",
+
+  // Remove reaction after bot replies (cleaner UX)
+  "removeAckAfterReply": true,
+
+  // Reaction emoji (defaults to agent identity emoji or 👀)
+  "ackReaction": "👀",
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 💬 Response Behavior
+  // ─────────────────────────────────────────────────────────────────────────
+  // No prefix needed for DM-only (cleaner)
+  "responsePrefix": "",
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // ⏱️ Inbound Message Debouncing
+  // ─────────────────────────────────────────────────────────────────────────
+  // Batch rapid messages into one agent turn
+  // Lower value = faster response, but less batching
+  "inbound": {
+    "debounceMs": 1500  // Wait 1.5s after last message (faster for DM)
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 📬 Message Queue Behavior
+  // ─────────────────────────────────────────────────────────────────────────
+  // Controls what happens when messages arrive while bot is processing
+  "queue": {
+    "mode": "collect",        // Batch queued messages
+    "debounceMs": 1000,       // Wait 1s after last queued message
+    "cap": 20,                // Max queued messages
+    "drop": "summarize"       // Summarize if queue fills up
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 🎤 Text-to-Speech (TTS)
+  // ─────────────────────────────────────────────────────────────────────────
+  // Convert outbound replies to audio using Microsoft Edge TTS (Russian voice)
+  // Mode: "inbound" - Only respond with audio after receiving voice notes
+  // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tts.md
+  // 🤖 Wiki: just wiki-docs "tts configuration edge"
+  "tts": {
+    // Auto-TTS mode: off | always | inbound | tagged
+    // "inbound" = only send audio after receiving a voice note
+    "auto": "inbound",
+
+    // Provider: elevenlabs | openai | edge
+    // "edge" = Microsoft Edge TTS (no API key required)
+    "provider": "edge",
+
+    // Microsoft Edge TTS settings
+    "edge": {
+      "enabled": true,
+      "voice": "ru-RU-DmitryNeural",  // Russian male neural voice
+      "lang": "ru-RU",                 // Russian language
+      "outputFormat": "audio-24khz-48kbitrate-mono-mp3",
+      "rate": "+0%",                   // Speech speed adjustment
+      "pitch": "+0%"                   // Voice pitch adjustment
+    }
+  }
+}

@@ -1,0 +1,235 @@
+// Example: Per-Agent Sandbox Configuration for Astromech
+// Location: .openclaw/openclaw.json
+//
+// This configuration demonstrates how to use custom sandbox images
+// for different agents with tailored toolsets and security profiles.
+
+{
+  // Global defaults (apply to all agents unless overridden)
+  agents: {
+    defaults: {
+      // By default, no sandboxing
+      sandbox: {
+        mode: "off",
+        scope: "agent",
+      },
+    },
+
+    // Agent-specific configurations
+    list: [
+      // ========================================
+      // Main Agent - No Sandboxing
+      // ========================================
+      {
+        id: "main",
+        default: true,
+        name: "Astromech Main",
+        workspace: "~/.openclaw/workspaces/main",
+        agentDir: "~/.openclaw/agents/main/agent",
+
+        // Main agent runs on host (no sandbox)
+        sandbox: {
+          mode: "off",
+        },
+
+        // Full tool access
+        tools: {
+          profile: "coding",
+          allow: ["*"],
+        },
+      },
+
+      // ========================================
+      // R2D2 - Development & Engineering Droid
+      // ========================================
+      {
+        id: "r2d2",
+        name: "R2D2",
+        workspace: "~/.openclaw/workspaces/r2d2",
+        agentDir: "~/.openclaw/agents/r2d2/agent",
+
+        identity: {
+          name: "R2D2",
+          theme: "astromech engineer",
+          emoji: "🤖",
+        },
+
+        // Always sandboxed, full development toolchain
+        sandbox: {
+          mode: "all",
+          scope: "agent", // One container per agent
+          workspaceAccess: "rw", // Can read/write agent workspace
+
+          docker: {
+            // Custom image with Node, Python, build tools
+            image: "astromech-r2d2:v1",
+
+            // Network access for package installs
+            network: "bridge",
+
+            // One-time setup after container creation
+            setupCommand: `
+              # Install global npm packages
+              npm install -g typescript ts-node
+
+              # Install Python packages
+              pip install --user requests pandas
+            `,
+
+            // Mount project directory read-only
+            binds: [
+              "/path/to/astromech:/astromech:ro",
+            ],
+
+            // Security constraints
+            memory: "2g",
+            cpus: "2",
+            pidsLimit: 512,
+          },
+        },
+
+        // Allow coding tools
+        tools: {
+          profile: "coding",
+          allow: ["*"],
+          deny: ["browser", "canvas"], // No UI tools
+        },
+      },
+
+      // ========================================
+      // C3PO - Communication & Protocol Droid
+      // ========================================
+      {
+        id: "c3po",
+        name: "C3PO",
+        workspace: "~/.openclaw/workspaces/c3po",
+        agentDir: "~/.openclaw/agents/c3po/agent",
+
+        identity: {
+          name: "C3PO",
+          theme: "protocol droid fluent in 6 million forms of communication",
+          emoji: "🗣️",
+        },
+
+        // Always sandboxed, communication focused
+        sandbox: {
+          mode: "all",
+          scope: "agent",
+          workspaceAccess: "ro", // Read-only access
+
+          docker: {
+            // Custom image with API and data processing tools
+            image: "astromech-c3po:v1",
+
+            // Network needed for API calls
+            network: "bridge",
+
+            // Memory limits (lighter than R2D2)
+            memory: "1g",
+            cpus: "1",
+          },
+        },
+
+        // Limited to communication and data tools
+        tools: {
+          allow: [
+            "read",
+            "grep",
+            "exec", // For API calls via curl/wget
+            "sessions_send",
+            "sessions_spawn",
+          ],
+          deny: [
+            "write",
+            "edit",
+            "apply_patch",
+            "process",
+            "browser",
+          ],
+        },
+      },
+
+      // ========================================
+      // BB8 - Reconnaissance Droid (Minimal)
+      // ========================================
+      {
+        id: "bb8",
+        name: "BB8",
+        workspace: "~/.openclaw/workspaces/bb8",
+        agentDir: "~/.openclaw/agents/bb8/agent",
+
+        identity: {
+          name: "BB8",
+          theme: "reconnaissance astromech",
+          emoji: "⚪",
+        },
+
+        // Maximum isolation, minimal tools
+        sandbox: {
+          mode: "all",
+          scope: "agent",
+          workspaceAccess: "none", // Isolated sandbox workspace
+
+          docker: {
+            // Ultra-minimal image
+            image: "astromech-bb8:v1",
+
+            // No network (maximum isolation)
+            network: "none",
+
+            // Strict resource limits
+            memory: "512m",
+            cpus: "0.5",
+            pidsLimit: 128,
+            readOnlyRoot: true, // Immutable filesystem
+          },
+        },
+
+        // Read-only operations only
+        tools: {
+          allow: ["read", "grep"],
+          deny: ["*"], // Deny everything except what's explicitly allowed
+        },
+      },
+    ],
+  },
+
+  // ========================================
+  // Channel Bindings (route to specific agents)
+  // ========================================
+  bindings: [
+    // Development tasks → R2D2
+    {
+      agentId: "r2d2",
+      match: {
+        channel: "telegram",
+        accountId: "personal",
+        peer: {
+          kind: "direct",
+          id: "dev-tasks-group-id",
+        },
+      },
+    },
+
+    // Communication tasks → C3PO
+    {
+      agentId: "c3po",
+      match: {
+        channel: "telegram",
+        accountId: "work",
+      },
+    },
+
+    // Public/untrusted → BB8
+    {
+      agentId: "bb8",
+      match: {
+        channel: "telegram",
+        accountId: "public",
+      },
+    },
+
+    // Default → Main (no sandbox)
+    // Falls back automatically to default agent
+  ],
+}

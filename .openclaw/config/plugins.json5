@@ -1,0 +1,50 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔌 PLUGINS CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Infrastructure-level plugins (Telegram, MCP, etc.)
+// Plugins extend OpenClaw with additional channels, tools, and integrations
+// ═══════════════════════════════════════════════════════════════════════════
+// Documentation current as of: OpenClaw v2026.2.14
+// Last reviewed: 2026-02-16
+//
+// Plugin types:
+// - Channel plugins: Telegram, Discord, Slack, Signal, etc.
+// - Tool plugins: MCP servers, custom integrations
+// - Infrastructure plugins: Database, caching, monitoring
+//
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/plugin.md
+// 📄 Docs: /path/to/astromech/tools/wiki/source/docs/gateway/configuration.md:1-57
+// 🤖 Wiki: just wiki-docs "plugins MCP configuration"
+
+{
+  "entries": {
+    // ─────────────────────────────────────────────────────────────────────────
+    // Telegram Plugin
+    // ─────────────────────────────────────────────────────────────────────────
+    "telegram": {
+      "enabled": true
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // OpenProse Plugin
+    // ─────────────────────────────────────────────────────────────────────────
+    // Multi-agent orchestration with .prose workflow files
+    // Registers /prose slash command for running workflow programs
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/prose.md
+    // 🤖 Wiki: just wiki-docs "OpenProse prose workflows"
+    "open-prose": {
+      "enabled": true
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lobster Plugin
+    // ─────────────────────────────────────────────────────────────────────────
+    // Workflow runtime for deterministic multi-step pipelines with approvals
+    // Runs local lobster CLI to execute typed JSON workflows
+    // 📄 Docs: /path/to/astromech/tools/wiki/source/docs/tools/lobster.md
+    // 🤖 Wiki: just wiki-docs "lobster workflow pipelines approvals"
+    "lobster": {
+      "enabled": true
+    }
+  }
+}
