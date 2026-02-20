@@ -1,99 +1,80 @@
 # ============================================
-# OpenClaw Runtime
+# Secrets & Environment
 # ============================================
-# Track config files (.openclaw/openclaw.json, .openclaw/config/*.json5)
-# but ignore sensitive data and runtime directories:
-.openclaw/.env
-.openclaw/memory/
-.openclaw/**/auth-profiles.json
-.openclaw/**/*.sqlite
-.openclaw/**/*.sqlite-wal
-.openclaw/**/*.sqlite-shm
-
-# Runtime directories
-.openclaw/agents/
-.openclaw/canvas/
-
-# Workspace runtime dirs (track config files, ignore binaries/runtime)
-.openclaw/workspace*/media/
-.openclaw/workspace*/home/
-.openclaw/workspace*/memory/
-.openclaw/workspace*/.openclaw/
-.openclaw/workspace*/.pi/
-
-.openclaw/credentials/
-.openclaw/identity/
-.openclaw/logs/
-.openclaw/telegram/
-.openclaw/media/
-.openclaw/cron/
-.openclaw/devices/
-.openclaw/settings/
-.openclaw/op/
-.openclaw/sandbox/
-.openclaw/subagents/
-
-# Runtime files
-.openclaw/exec-approvals.json
-.openclaw/update-check.json
-.openclaw/*.bak
-.openclaw/*.bak.*
-
-
-# ============================================
-# Data & Secrets
-# ============================================
-.whoop-cli/
-data/
+.env
 secrets/
 *.token
 *.key
 *.secret
 **/*.key
 **/*.pem
-.env
 
 
 # ============================================
-# Wiki Knowledge Base (generated/external)
+# OpenClaw Runtime
 # ============================================
-tools/wiki/.env
+# Track config files (.openclaw/openclaw.json, .openclaw/config/*.json5)
+# but ignore runtime data, credentials, and generated state:
+.openclaw/.env
+.openclaw/**/auth-profiles.json
+.openclaw/**/*.sqlite
+.openclaw/**/*.sqlite-wal
+.openclaw/**/*.sqlite-shm
+.openclaw/*.bak
+.openclaw/*.bak.*
+
+# Runtime directories (auto-created by OpenClaw on first run)
+.openclaw/agents/
+.openclaw/canvas/
+.openclaw/credentials/
+.openclaw/cron/
+.openclaw/delivery-queue/
+.openclaw/devices/
+.openclaw/exec-approvals.json
+.openclaw/identity/
+.openclaw/logs/
+.openclaw/media/
+.openclaw/memory/
+.openclaw/op/
+.openclaw/sandbox/
+.openclaw/settings/
+.openclaw/subagents/
+.openclaw/telegram/
+.openclaw/update-check.json
+
+# Workspace runtime dirs (track SOUL/IDENTITY/config, ignore session data)
+.openclaw/workspace*/media/
+.openclaw/workspace*/home/
+.openclaw/workspace*/memory/
+.openclaw/workspace*/.openclaw/
+.openclaw/workspace*/.pi/
+
+
+# ============================================
+# Persistent Data (bind mounts)
+# ============================================
+data/
+
+
+# ============================================
+# Wiki Knowledge Base (git submodule — run: git submodule update --init)
+# ============================================
 tools/wiki/data/
 tools/wiki/node_modules/
 tools/wiki/source/
+tools/wiki/.env
 
 
 # ============================================
-# OpenMemory (self-hosted mem0 stack)
+# OpenMemory
 # ============================================
 tools/openmemory/
-
-
-# ============================================
-# Temporary/Deprecated (will be deleted)
-# ============================================
-archive/
-references/
-templates/
-/openclaw/
 
 
 # ============================================
 # Claude Code Local Settings
 # ============================================
 .claude/settings.local.json
-
-
-# ============================================
-# Git Worktrees
-# ============================================
-.worktrees/
-
-
-# ============================================
-# Template Export Output
-# ============================================
-dist/
 
 
 # ============================================
